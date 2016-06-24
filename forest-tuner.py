@@ -140,7 +140,6 @@ def main():
         optimal_forest = run_forest_run(args.workingDir, args.forestPath,
                             args.msgsteinerPath, args.prizePath, args.edgePath,
                             config_file, label)
-        break
 
 if __name__ == '__main__':
     main()
