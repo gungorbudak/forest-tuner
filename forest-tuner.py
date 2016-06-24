@@ -1,5 +1,4 @@
 import os
-import random
 import argparse
 import numpy as np
 from csv import DictReader

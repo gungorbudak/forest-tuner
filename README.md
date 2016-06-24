@@ -6,7 +6,9 @@ Prize-collecting Steiner Forest (PCSF or forest) algorithm parameter tuner for w
 
 Setup `msgsteiner 1.1` and `OmicsIntegrator 0.2.0` as described [in the OmicsIntegrator's repository](https://github.com/fraenkel-lab/OmicsIntegrator).
 
-Download `forest-tuner.py` script from this repository and move to your working directory.
+Download `forest-tuner.py` script from this repository and move to your working directory. Use `wget` as shown below or right-click and save [this link](https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py).
+
+    wget https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py
 
 ## Run
 
