@@ -18,16 +18,16 @@ def make_config_file(working_dir, config, label):
     return config_file
 
 
-def make_log_file(outputs_dir, stdin, stdout, label):
+def make_log_file(outputs_dir, stdout, stderr, label):
     logs_dir = os.path.join(outputs_dir, 'logs')
     if not os.path.exists(logs_dir):
         os.mkdir(logs_dir)
     log_file = os.path.join(logs_dir, 'log_' + label + '.txt')
     with open(log_file, 'w') as f:
-        if stdin:
-            f.write(stdin)
         if stdout:
             f.write(stdout)
+        if stderr:
+            f.write(stderr)
     return
 
 
@@ -93,51 +93,53 @@ def get_best_solution(solutions):
 
 def run_forest_run(outputs_dir, forest_path, msgsteiner_path,
         prizes_file, edges_file, config_file, label):
-    # create a command for running forest
-    command = [
-        'python', forest_path,
-        '--msgpath', msgsteiner_path,
-        '-p', prizes_file,
-        '-e', edges_file,
-        '-c', config_file,
-        '--outpath', outputs_dir,
-        '--outlabel', label
-    ]
+    optimal_forest_file = os.path.join(outputs_dir, label + '_optimalForest.sif')
+    if not os.path.exists(optimal_forest_file):
+        # create a command for running forest
+        command = [
+            'python', forest_path,
+            '--msgpath', msgsteiner_path,
+            '-p', prizes_file,
+            '-e', edges_file,
+            '-c', config_file,
+            '--outpath', outputs_dir,
+            '--outlabel', label
+        ]
 
-    # run the command
-    process = Popen(
-        command,
-        stdin=PIPE,
-        stdout=PIPE,
-        )
-    stdin, stdout = process.communicate()
+        # run the command
+        process = Popen(
+            command,
+            stdout=PIPE,
+            stderr=PIPE,
+            )
+        stdout, stderr = process.communicate()
 
-    # write output and errors to a log file
-    make_log_file(outputs_dir, stdin, stdout, label)
+        # write output and errors to a log file
+        make_log_file(outputs_dir, stdout, stderr, label)
 
-    # delete all output files except optimal forest
-    augmented_forest_file = os.path.join(outputs_dir, label + '_augmentedForest.sif')
-    if os.path.exists(augmented_forest_file):
-        os.remove(augmented_forest_file)
+        # delete all output files except optimal forest
+        augmented_forest_file = os.path.join(outputs_dir, label + '_augmentedForest.sif')
+        if os.path.exists(augmented_forest_file):
+            os.remove(augmented_forest_file)
 
-    dummy_forest_file = os.path.join(outputs_dir, label + '_dummyForest.sif')
-    if os.path.exists(dummy_forest_file):
-        os.remove(dummy_forest_file)
+        dummy_forest_file = os.path.join(outputs_dir, label + '_dummyForest.sif')
+        if os.path.exists(dummy_forest_file):
+            os.remove(dummy_forest_file)
 
-    edge_attributes_file = os.path.join(outputs_dir, label + '_edgeattributes.tsv')
-    if os.path.exists(edge_attributes_file):
-        os.remove(edge_attributes_file)
+        edge_attributes_file = os.path.join(outputs_dir, label + '_edgeattributes.tsv')
+        if os.path.exists(edge_attributes_file):
+            os.remove(edge_attributes_file)
 
-    node_attributes_file = os.path.join(outputs_dir, label + '_nodeattributes.tsv')
-    if os.path.exists(node_attributes_file):
-        os.remove(node_attributes_file)
+        node_attributes_file = os.path.join(outputs_dir, label + '_nodeattributes.tsv')
+        if os.path.exists(node_attributes_file):
+            os.remove(node_attributes_file)
 
-    info_file = os.path.join(outputs_dir, label + '_info.txt')
-    if os.path.exists(info_file):
-        os.remove(info_file)
+        info_file = os.path.join(outputs_dir, label + '_info.txt')
+        if os.path.exists(info_file):
+            os.remove(info_file)
 
-    # return the optimal forest obtained for testing
-    return os.path.join(outputs_dir, label + '_optimalForest.sif')
+    # return the optimal forest file obtained for testing
+    return optimal_forest_file
 
 
 def main():
@@ -214,11 +216,11 @@ def main():
             'forest_file': forest_file
             })
 
-    # collect the solutions with at least one edge
+    # collect the solutions with more than one edge
     solutions = []
     for result in results:
         F = get_forest(result['forest_file'])
-        if F.number_of_edges() > 0:
+        if F.number_of_edges() > 1:
             solutions.append({
                 'config': result['config'],
                 'forest': F
