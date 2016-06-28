@@ -192,11 +192,7 @@ def main():
     parser.add_argument('--size', metavar='INTEGER',
         type=int, default=10,
         help='Size of w and b values to tune for')
-    parser.add_argument('--minEdges', metavar='INTEGER',
-        type=int, default=1,
-        help='Minimum number of edges in optimal forests\
-              to consider as a solution')
-    parser.add_argument('--minTerminalNodes', metavar='INTEGER',
+    parser.add_argument('--minNodes', metavar='INTEGER',
         type=int, default=60,
         help='Minimum percentage of nodes in optimal forests\
               overlapping with terminal nodes in prize file\
@@ -264,12 +260,12 @@ def main():
     for result in results:
         F = get_network(result['forest_file'])
         # don't include forests with less than given number of edges
-        if args.minEdges < F.number_of_edges():
+        if F.number_of_edges() > 0:
             # only if more than 60 percent of terminal nodes
             # are present in the solution
             overlap = 100 * (len(terminal_nodes.intersection(F.nodes())) /
                 terminal_nodes_size)
-            if overlap > args.minTerminalNodes:
+            if overlap > args.minNodes:
                 solutions.append({
                     'config': result['config'],
                     'F': F

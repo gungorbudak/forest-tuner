@@ -22,8 +22,7 @@ Download `forest-tuner.py` script from this repository and move to your working 
     usage: forest-tuner.py [-h] [--workingDir DIR] --forestPath FILE
                            --msgsteinerPath FILE --prizePath FILE --edgePath FILE
                            [--wStart DECIMAL] [--wEnd DECIMAL] [--bStart DECIMAL]
-                           [--bEnd DECIMAL] [--size INTEGER] [--minEdges INTEGER]
-                           [--minTerminalNodes INTEGER]
+                           [--bEnd DECIMAL] [--size INTEGER] [--minNodes INTEGER]
 
     Prize-collecting Steiner Forest algorithm parameter tuner for w and b
     parameters
@@ -43,9 +42,6 @@ Download `forest-tuner.py` script from this repository and move to your working 
       --bStart DECIMAL      Starting value for b (default: 1.0)
       --bEnd DECIMAL        Ending value for b (default: 10.0)
       --size INTEGER        Size of w and b values to tune for (default: 10)
-      --minEdges INTEGER    Minimum number of edges in optimal forests to consider
-                            as a solution (default: 1)
-      --minTerminalNodes INTEGER
-                            Minimum percentage of nodes in optimal forests
+      --minNodes INTEGER    Minimum percentage of nodes in optimal forests
                             overlapping with terminal nodes in prize file to
                             consider as a solution (default: 60)
