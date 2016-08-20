@@ -1,4 +1,5 @@
 import os
+import csv
 import argparse
 import logging
 import numpy as np
@@ -9,44 +10,87 @@ from subprocess import Popen, PIPE
 
 
 def make_config_file(working_dir, config, label):
+    """
+    Generates the config file for the forest run
+
+    Args:
+        working_dir: Absolute path to working directory
+        config: Dictionary of config parameters
+        label: Unique label for the filename
+
+    Returns:
+        config_file: Absolute path to config file generated
+    """
+    # make configs dir if there is not one
     configs_dir = os.path.join(working_dir, 'configs')
     if not os.path.exists(configs_dir):
         os.mkdir(configs_dir)
+
+    # make config file if there is not one
     config_file = os.path.join(configs_dir, 'config_' + label + '.txt')
     if not os.path.exists(config_file):
         with open(config_file, 'w') as f:
             for k, v in config.iteritems():
                 f.write(k + ' = ' + str(v) + '\n')
+
     return config_file
 
 
 def make_log_file(outputs_dir, stdout, stderr, label):
+    """
+    Generates log file for std output & error log from forest run
+
+    Args:
+        outputs_dir: Absolute path to outputs directory
+        stdout: Standard output
+        stderr: Standard error
+        label: Unique label for the filename
+    """
+    # make logs dir if there is not one
     logs_dir = os.path.join(outputs_dir, 'logs')
     if not os.path.exists(logs_dir):
         os.mkdir(logs_dir)
+
+    # make log file if there is not one
     log_file = os.path.join(logs_dir, 'log_' + label + '.txt')
     with open(log_file, 'w') as f:
         if stdout:
             f.write(stdout)
         if stderr:
             f.write(stderr)
+
     return
 
 
-def make_network_file(outputs_dir, N, label, sif = True):
-    extension = '.sif' if sif else '.tsv'
-    network_file = os.path.join(outputs_dir, label + extension)
-    if not os.path.exists(network_file):
-        with open(network_file, 'w') as f:
-            for edge in N.edges():
-                f.write(edge[0] + '\t' + edge[1] + '\n')
-    return network_file
+def make_data_file(data, data_path):
+    header = [
+        'label',
+        'w',
+        'b',
+        'mu',
+        't',
+        'num_prizes',
+        'num_terminals',
+        'num_steiners',
+        'num_trees',
+        'num_singletons',
+        'mean_degrees',
+        'median_degrees'
+        ]
+
+    with open(data_path, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=header, delimiter='\t')
+        writer.writeheader()
+        for d in data:
+            writer.writerow(d)
+
+    return data_path
 
 
-def get_label(prize_path, w, b, mu):
+def get_label(prize_path, config):
     label = ''.join([
         os.path.splitext(os.path.basename(prize_path))[0], '_',
-        'w', str(w), 'b', str(b), 'mu', str(mu)])
+        'w', str(config['w']), 'b', str(config['b']), 'mu', str(config['mu'])])
     return label
 
 
@@ -77,7 +121,7 @@ def get_network(network_file, sif = True):
     return N
 
 
-def get_terminal_nodes(prize_path):
+def get_prizes(prize_path):
     nodes = set()
     with open(prize_path) as rows:
         for row in rows:
@@ -86,47 +130,61 @@ def get_terminal_nodes(prize_path):
     return nodes
 
 
-def get_forest_feature(F):
-    n1 = nx.number_connected_components(F)
-    n2 = np.mean([T.size() for T in nx.connected_component_subgraphs(F)])
-    return abs(n1 - n2)
+def get_t(output_file):
+    t = 0
+    info_file = output_file.replace('_optimalForest.sif', '_info.txt')
+    with open(info_file) as lines:
+        for line in lines:
+            line = line.strip()
+            if line == '':
+                break
+            t = line.split()[1]
+    if t != 'edges,':
+        return float(t)
+    return 'NA'
 
 
-def get_solutions(results, prize_path, min_nodes):
+def get_data(results, prize_path, edge_path, min_nodes):
     # read terminal nodes from the prize file
-    terminal_nodes = get_terminal_nodes(prize_path)
-    terminal_nodes_size = float(len(terminal_nodes))
+    prizes = get_prizes(prize_path)
+    prizes_size = len(prizes)
 
-    solutions = []
+    I = get_network(edge_path, sif = False)
+
+    data = []
     for result in results:
         F = get_network(result['forest_file'])
         # don't include forests with less than given number of edges
         if F.number_of_edges() > 0:
             # only if more than given percent of terminal nodes
             # are present in the solution
-            overlap = 100 * (len(terminal_nodes.intersection(F.nodes())) /
-                terminal_nodes_size)
+            overlap = 100 * (len(prizes.intersection(F.nodes())) /
+                float(prizes_size))
             if overlap > min_nodes:
-                solutions.append({
-                    'config': result['config'],
-                    'F': F
-                    })
-    return solutions
+                steiner_nodes = set(F.nodes()).difference(prizes)
+                n2 = len(steiner_nodes)
+                n1 = F.number_of_nodes() - n2
+                n3 = len([T for T in nx.connected_component_subgraphs(F)
+                    if T.number_of_nodes() > 5])
+                n4 = nx.number_connected_components(F) - n3
+                t = get_t(result['forest_file'])
+                degrees = [I.degree(node) for node in steiner_nodes]
+                data.append({
+                    'label': result['label'],
+                    'w': result['config']['w'],
+                    'b': result['config']['b'],
+                    'mu': result['config']['mu'],
+                    't': t,
+                    'num_prizes': prizes_size,
+                    'num_terminals': n1,
+                    'num_steiners': n2,
+                    'num_trees': n3,
+                    'num_singletons': n4,
+                    'mean_degrees': round(np.mean(degrees), 2),
+                    'median_degrees': round(np.median(degrees), 2)
+                })
 
-
-def get_best_solution(solutions):
-    min_feature = None
-    best_solution = {}
-    for solution in solutions:
-        feature = get_forest_feature(solution['F'])
-        if min_feature == None:
-            min_feature = feature
-            best_solution = solution
-        else:
-            if feature < min_feature:
-                min_feature = feature
-                best_solution = solution
-    return best_solution
+    return data
 
 
 def forest_worker(job):
@@ -144,10 +202,10 @@ def forest_worker(job):
     config_file = make_config_file(working_dir, config, label)
 
     # determine name of the result file
-    optimal_forest_file = os.path.join(outputs_dir,
+    forest_file = os.path.join(outputs_dir,
         label + '_optimalForest.sif')
 
-    if not os.path.exists(optimal_forest_file):
+    if not os.path.exists(forest_file):
         # create a command for running forest
         command = [
             'python', forest_path,
@@ -172,29 +230,34 @@ def forest_worker(job):
 
         # suffixes for output files to be deleted
         suffixes = [
-            '_augmentedForest.sif',
-            '_dummyForest.sif',
-            '_edgeattributes.tsv',
-            '_nodeattributes.tsv',
-            '_info.txt',
+            # '_optimalForest.sif',
+            # '_augmentedForest.sif',
+            # '_dummyForest.sif',
+            # '_edgeattributes.tsv',
+            # '_nodeattributes.tsv',
+            # '_info.txt',
         ]
 
-        # delete all output files except optimal forest
+        # delete all output files except few
         for suffix in suffixes:
             output_file = os.path.join(outputs_dir, label + suffix)
             if os.path.exists(output_file):
                 os.remove(output_file)
 
     # return the config and
-    # optimal forest file obtained for testing
-    return {'config': config, 'forest_file': optimal_forest_file}
+    # optimal forest file obtained for data collections
+    return {
+        'label': label,
+        'config': config,
+        'forest_file': forest_file
+        }
 
 
 def main():
     # parsing terminal arguments
     parser = argparse.ArgumentParser(
         description='Prize-collecting Steiner Forest algorithm\
-                     parameter tuner for w and b parameters',
+                     parameter tuner for w, b and mu parameters',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--workingDir', metavar='DIR', default='.',
         help='Working directory for configs and outputs')
@@ -219,22 +282,29 @@ def main():
         type=float, default=10.0,
         help='Ending value for b')
     parser.add_argument('--muStart', metavar='DECIMAL',
-        type=float, default=0.0,
+        type=float, default=0.01,
         help='Starting value for mu')
     parser.add_argument('--muEnd', metavar='DECIMAL',
-        type=float, default=0.2,
+        type=float, default=0.05,
         help='Ending value for mu')
     parser.add_argument('--size', metavar='INTEGER',
-        type=int, default=10,
+        type=int, default=5,
         help='Size of w and b values to tune for')
     parser.add_argument('--minNodes', metavar='INTEGER',
         type=int, default=60,
         help='Minimum percentage of nodes in optimal forests\
               overlapping with terminal nodes in prize file\
-              to consider as a solution')
+              for adding the solution to data file')
     parser.add_argument('--processes', metavar='INTEGER',
         type=int, default=64,
         help='Number of processes to use in parallel')
+    parser.add_argument('--outputsName', metavar='STRING',
+        type=str, default='outputs',
+        help='Name of the outputs directory in the given\
+              working directory')
+    parser.add_argument('--dataPath', metavar='FILE',
+        default='./forest-tuner-data.tsv',
+        help='Absolute path to data file')
     parser.add_argument('--logPath', metavar='FILE',
         default='./forest-tuner.log',
         help='Absolute path to log file')
@@ -281,7 +351,7 @@ def main():
         args.size)
 
     # directory for storing outputs
-    outputs_dir = os.path.join(args.workingDir, 'outputs')
+    outputs_dir = os.path.join(args.workingDir, args.outputsName)
     if not os.path.exists(outputs_dir):
         os.mkdir(outputs_dir)
 
@@ -294,8 +364,7 @@ def main():
     # run forest for each configuration
     # obtained based on user input
     for config in configs:
-        label = get_label(args.prizePath,
-            config['w'], config['b'], config['mu'])
+        label = get_label(args.prizePath, config)
         jobs.append({
             'working_dir': args.workingDir,
             'forest_path': args.forestPath,
@@ -319,23 +388,14 @@ def main():
     # join to wait for collecting results
     pool.join()
 
-    # collect the solutions under certain conditions
-    solutions = get_solutions(results, args.prizePath, args.minNodes)
+    # collect the data from all runs
+    data = get_data(results, args.prizePath, args.edgePath, args.minNodes)
 
-    # get the best solution based on number of trees
-    # and average size of trees in the optimal forests
-    solution = get_best_solution(solutions)
+    # write the data
+    data_path = make_data_file(data, args.dataPath)
 
-    # write the best solution to a text file
-    label = get_label(args.prizePath, solution['config']['w'],
-        solution['config']['b'], solution['config']['mu'])
-    forest_file = make_network_file(outputs_dir, solution['F'],
-        label + '_bestOptimalForest', sif = False)
-
-    # log the final solution
-    logging.info('Best config. found to be %s', ', '.join([
-        k + ': ' + str(v) for k, v in solution['config'].iteritems()]))
-    logging.info('Best solution written to %s', forest_file)
+    # log the final output
+    logging.info('Tuning data written to %s', data_path)
 
 
 if __name__ == '__main__':
