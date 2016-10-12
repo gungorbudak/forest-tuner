@@ -14,7 +14,7 @@ Download `forest-tuner.py` script from this repository and move to your working 
 
 ### Example
 
-    python forest-tuner.py --workingDir /home/gbudak/projects/cptac --forestPath /home/gbudak/softwares/OmicsIntegrator-0.3.0/scripts/forest.py --msgsteinerPath /home/gbudak/softwares/msgsteiner-1.1/msgsteiner --edgePath /home/gbudak/projects/cptac/PSICQUIC_UPDATED_05162013.txt --prizePath /home/gbudak/projects/cptac/prizes/ovarian_S1T60.txt --wStart 1.0 --wEnd 10.0 --bStart 1.0 --bEnd 10.0 --muStart 0.01 --muEnd 0.05 --size 5
+    python forest-tuner.py --workingDir /home/gbudak/projects/cptac --forestPath /home/gbudak/softwares/OmicsIntegrator-0.3.0/scripts/forest.py --msgsteinerPath /home/gbudak/softwares/msgsteiner-1.3/msgsteiner --edgePath /home/gbudak/projects/cptac/PSICQUIC_UPDATED_05162013.txt --prizePath /home/gbudak/projects/cptac/prizes/ovarian_S1T60.txt --wStart 1.0 --wEnd 10.0 --bStart 1.0 --bEnd 10.0 --muStart 0.01 --muEnd 0.05 --size 5
 
 
 ### Getting help
