@@ -21,14 +21,11 @@ def make_config_file(working_dir, config, label):
     Returns:
         config_file: Absolute path to config file generated
     """
-    # make configs dir if there is not one
     configs_dir = os.path.join(working_dir, 'configs')
-    if not os.path.exists(configs_dir):
-        os.mkdir(configs_dir)
-
+    
     # make config file if there is not one
     config_file = os.path.join(configs_dir, 'config_' + label + '.txt')
-    if not os.path.exists(config_file):
+    if not os.path.isfile(config_file):
         with open(config_file, 'w') as f:
             for k, v in config.iteritems():
                 f.write(k + ' = ' + str(v) + '\n')
@@ -48,7 +45,7 @@ def make_log_file(outputs_dir, stdout, stderr, label):
     """
     # make logs dir if there is not one
     logs_dir = os.path.join(outputs_dir, 'logs')
-    if not os.path.exists(logs_dir):
+    if not os.path.isdir(logs_dir):
         os.mkdir(logs_dir)
 
     # make log file if there is not one
@@ -77,7 +74,8 @@ def make_data_file(data, data_path):
         'num_trees',
         'num_singletons',
         'mean_degrees',
-        'median_degrees'
+        'median_degrees',
+        'has_ubc'
         ]
 
     with open(data_path, 'w') as f:
@@ -90,26 +88,53 @@ def make_data_file(data, data_path):
 
 
 def get_label(prize_path, config):
+    """
+    Generate a label from filename of the prize file and parameter sets
+
+    Args:
+        prize_path: absolute path to the prize file
+        config: dictionary of parameters
+
+    Returns:
+        label: string that consists of filename of the prize file parameters
+    """
     label = ''.join([
         os.path.splitext(os.path.basename(prize_path))[0], '_',
-        'w', str(config['w']), 'b', str(config['b']), 'mu', str(config['mu'])])
+        'w', str(config['w']),
+        'b', str(config['b']),
+        'mu', str(config['mu'])
+        ])
     return label
 
 
 def get_configs(w, b, mu, size):
+    """
+    Generate parameter sets from given start, end values and size
+
+    Args:
+        w: dictionary of start and end values for omega parameter
+        b: dictionary of start and end values for beta parameter
+        mu: dictionary of start and end values for mu parameter
+        size: number of the parameters to be picked between given intervals
+
+    Returns:
+        configs: list of parameter sets
+    """
     configs = []
-    ws = np.linspace(w['start'], w['end'], size)
-    bs = np.linspace(b['start'], b['end'], size)
-    mus = np.linspace(mu['start'], mu['end'], size)
-    for i in xrange(size):
-        for j in xrange(size):
-            for k in xrange(size):
+    ws = np.unique(np.linspace(w['start'], w['end'], size))
+    bs = np.unique(np.linspace(b['start'], b['end'], size))
+    mus = np.unique(np.linspace(mu['start'], mu['end'], size))
+
+    for i in xrange(len(ws)):
+        for j in xrange(len(bs)):
+            for k in xrange(len(mus)):
                 configs.append({
                     'w': round(ws[i], 2),
                     'b': round(bs[j], 2),
                     'mu': round(mus[k], 2),
                     'D': 10
                 })
+
     return configs
 
 
@@ -173,6 +198,7 @@ def get_data(results, prize_path, edge_path, min_nodes):
                 n6 = nx.number_connected_components(F) - n5
                 t = get_t(result['forest_file'])
                 degrees = [I.degree(node) for node in steiner_nodes]
+                has_ubc = int(F.has_node('UBC'))
                 data.append({
                     'label': result['label'],
                     'w': result['config']['w'],
@@ -187,14 +213,14 @@ def get_data(results, prize_path, edge_path, min_nodes):
                     'num_trees': n5,
                     'num_singletons': n6,
                     'mean_degrees': round(np.mean(degrees), 2),
-                    'median_degrees': round(np.median(degrees), 2)
+                    'median_degrees': round(np.median(degrees), 2),
+                    'has_ubc': has_ubc
                 })
 
     return data
 
 
 def forest_worker(job):
-    # local variables for the job
     working_dir = job['working_dir']
     forest_path = job['forest_path']
     msgsteiner_path = job['msgsteiner_path']
@@ -204,15 +230,12 @@ def forest_worker(job):
     config = job['config']
     label = job['label']
 
-    # generate a config file
     config_file = make_config_file(working_dir, config, label)
 
-    # determine name of the result file
     forest_file = os.path.join(outputs_dir,
         label + '_optimalForest.sif')
 
     if not os.path.exists(forest_file):
-        # create a command for running forest
         command = [
             'python', forest_path,
             '--msgpath', msgsteiner_path,
@@ -223,7 +246,6 @@ def forest_worker(job):
             '--outlabel', label
         ]
 
-        # run the command
         process = Popen(
             command,
             stdout=PIPE,
@@ -358,8 +380,13 @@ def main():
 
     # directory for storing outputs
     outputs_dir = os.path.join(args.workingDir, args.outputsName)
-    if not os.path.exists(outputs_dir):
+    if not os.path.isdir(outputs_dir):
         os.mkdir(outputs_dir)
+
+    # make the directory that will store auto-generated config files
+    configs_dir = os.path.join(args.workingDir, 'configs')
+    if not os.path.isdir(configs_dir):
+        os.mkdir(configs_dir)
 
     # log the prize file currently worked on
     logging.info('Running forest for %s', args.prizePath)

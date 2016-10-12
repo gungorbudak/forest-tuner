@@ -4,7 +4,7 @@ Prize-collecting Steiner Forest (PCSF or forest) algorithm parameter tuner for w
 
 ## Setup
 
-Setup `msgsteiner 1.1` and `OmicsIntegrator 0.2.0` as described [in the OmicsIntegrator's repository](https://github.com/fraenkel-lab/OmicsIntegrator).
+Setup `msgsteiner 1.3` and `OmicsIntegrator 0.3.0` as described [in the OmicsIntegrator's repository](https://github.com/fraenkel-lab/OmicsIntegrator).
 
 Download `forest-tuner.py` script from this repository and move to your working directory. Use `wget` as shown below or right-click and save [this link](https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py).
 
@@ -14,7 +14,7 @@ Download `forest-tuner.py` script from this repository and move to your working 
 
 ### Example
 
-    python forest-tuner.py --workingDir /home/gungor/projects/cptac --forestPath /home/gungor/softwares/OmicsIntegrator-0.2.0/scripts/forest.py --msgsteinerPath /home/gungor/softwares/msgsteiner-1.1/msgsteiner --edgePath /home/gungor/projects/cptac/PSICQUIC_UPDATED_05162013.txt --prizePath /home/gungor/projects/cptac/prizes/ovarian_S1T60.txt --wStart 1.0 --wEnd 10.0 --bStart 1.0 --bEnd 10.0 --muStart 0.01 --muEnd 0.05 --size 5
+    python forest-tuner.py --workingDir /home/gbudak/projects/cptac --forestPath /home/gbudak/softwares/OmicsIntegrator-0.3.0/scripts/forest.py --msgsteinerPath /home/gbudak/softwares/msgsteiner-1.1/msgsteiner --edgePath /home/gbudak/projects/cptac/PSICQUIC_UPDATED_05162013.txt --prizePath /home/gbudak/projects/cptac/prizes/ovarian_S1T60.txt --wStart 1.0 --wEnd 10.0 --bStart 1.0 --bEnd 10.0 --muStart 0.01 --muEnd 0.05 --size 5
 
 
 ### Getting help
