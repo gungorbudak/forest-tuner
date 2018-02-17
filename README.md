@@ -21,7 +21,7 @@ Download `forest-tuner.py` script from this repository and move to your working 
     --prizePath ./CT-PA_prize.tsv \
     --edgePath ./iref_mitab_miscore_2013_08_12_interactome.txt \
     --wStart 2 --wEnd 10 --bStart 2 --bEnd 10 --muStart 0.1 --muEnd 0.5 --size 5 \
-    --minNodes 60 --outputsName outputs --processes 8
+    --minNodes 60 --outputsDirName outputs --processes 8
 ```
 
 ### Getting help
@@ -32,7 +32,7 @@ Download `forest-tuner.py` script from this repository and move to your working 
                            [--wStart DECIMAL] [--wEnd DECIMAL] [--bStart DECIMAL]
                            [--bEnd DECIMAL] [--muStart DECIMAL] [--muEnd DECIMAL]
                            [--size INTEGER] [--minNodes INTEGER]
-                           [--processes INTEGER] [--outputsName STRING]
+                           [--processes INTEGER] [--outputsDirName STRING]
                            [--dataPath FILE] [--logPath FILE]
 
     Prize-collecting Steiner Forest algorithm parameter tuner for w, b and mu
