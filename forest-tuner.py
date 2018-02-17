@@ -107,7 +107,7 @@ def get_label(prize_path, config):
     return label
 
 
-def get_configs(w, b, mu, size):
+def get_configs(w, b, mu, size, processes):
     """
     Generate parameter sets from given start, end values and size
 
@@ -132,7 +132,8 @@ def get_configs(w, b, mu, size):
                     'w': round(ws[i], 2),
                     'b': round(bs[j], 2),
                     'mu': round(mus[k], 2),
-                    'D': 10
+                    'D': 10,
+                    'threads': processes
                 })
 
     return configs
@@ -237,7 +238,7 @@ def forest_worker(job):
 
     if not os.path.exists(forest_file):
         command = [
-            'python', forest_path,
+            'python2', forest_path,
             '--msgpath', msgsteiner_path,
             '-p', prize_path,
             '-e', edge_path,
@@ -298,22 +299,22 @@ def main():
     parser.add_argument('--edgePath', metavar='FILE', required=True,
         help='(required) Absolute path to edge file')
     parser.add_argument('--wStart', metavar='DECIMAL',
-        type=float, default=1.0,
+        type=float, default=2.0,
         help='Starting value for w')
     parser.add_argument('--wEnd', metavar='DECIMAL',
         type=float, default=10.0,
         help='Ending value for w')
     parser.add_argument('--bStart', metavar='DECIMAL',
-        type=float, default=1.0,
+        type=float, default=2.0,
         help='Starting value for b')
     parser.add_argument('--bEnd', metavar='DECIMAL',
         type=float, default=10.0,
         help='Ending value for b')
     parser.add_argument('--muStart', metavar='DECIMAL',
-        type=float, default=0.01,
+        type=float, default=0.1,
         help='Starting value for mu')
     parser.add_argument('--muEnd', metavar='DECIMAL',
-        type=float, default=0.05,
+        type=float, default=0.5,
         help='Ending value for mu')
     parser.add_argument('--size', metavar='INTEGER',
         type=int, default=5,
@@ -324,9 +325,9 @@ def main():
               overlapping with terminal nodes in prize file\
               for adding the solution to data file')
     parser.add_argument('--processes', metavar='INTEGER',
-        type=int, default=64,
+        type=int, default=16,
         help='Number of processes to use in parallel')
-    parser.add_argument('--outputsName', metavar='STRING',
+    parser.add_argument('--outputsDirName', metavar='STRING',
         type=str, default='outputs',
         help='Name of the outputs directory in the given\
               working directory')
@@ -376,7 +377,7 @@ def main():
         {'start': args.wStart, 'end': args.wEnd},
         {'start': args.bStart, 'end': args.bEnd},
         {'start': args.muStart, 'end': args.muEnd},
-        args.size)
+        args.size, args.processes)
 
     # directory for storing outputs
     outputs_dir = os.path.join(args.workingDir, args.outputsName)
