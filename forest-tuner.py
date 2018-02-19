@@ -2,11 +2,13 @@ import os
 import csv
 import argparse
 import logging
-import numpy as np
-import networkx as nx
+import operator
 import multiprocessing as mp
 from csv import DictReader
 from subprocess import Popen, PIPE
+
+import numpy as np
+import networkx as nx
 
 
 def make_config_file(working_dir, config, label):
@@ -77,6 +79,9 @@ def make_data_file(data, data_path):
         'median_degrees',
         'has_ubc'
         ]
+
+    data.sort(key=operator.itemgetter('mean_degrees'))
+    data.sort(key=operator.itemgetter('num_terminals'), reverse=True)
 
     with open(data_path, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=header, delimiter='\t')
@@ -380,7 +385,7 @@ def main():
         args.size, args.processes)
 
     # directory for storing outputs
-    outputs_dir = os.path.join(args.workingDir, args.outputsName)
+    outputs_dir = os.path.join(args.workingDir, args.outputsDirName)
     if not os.path.isdir(outputs_dir):
         os.mkdir(outputs_dir)
 
