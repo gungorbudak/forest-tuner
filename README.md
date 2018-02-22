@@ -4,11 +4,17 @@ Prize-collecting Steiner Forest (PCSF or Forest) algorithm parameter tuner for o
 
 ## Setup
 
-Setup `msgsteiner 1.3` and `OmicsIntegrator 0.3.1` as described [in the OmicsIntegrator's repository](https://github.com/fraenkel-lab/OmicsIntegrator).
+Setup `OmicsIntegrator v0.3.1` and `msgsteiner v1.3` as described [in the OmicsIntegrator's repository](https://github.com/fraenkel-lab/OmicsIntegrator).
 
-Download `forest-tuner.py` script from this repository and move to your working directory. Use `wget` as shown below or right-click and save [this link](https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py).
+Download `forest-tuner.py` script from this repository and move it to your working directory. Use `wget` as shown below or right-click and save [this link](https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py).
 
     wget https://raw.githubusercontent.com/gungorbudak/forest-tuner/master/forest-tuner.py
+
+Alternatively, if you have Docker installed on your machine, you can also use the `Dockerfile` provided in this repository to setup a working Docker image/container including `Omics Integrator v0.3.1`, `msgsteiner v1.3` and `forest-tuner.py`. To do so:
+
+    git clone https://github.com/gungorbudak/forest-tuner.git
+    cd forest-tuner
+    docker built -t forest-tuner:0.1 .
 
 ## Run
 
@@ -22,6 +28,12 @@ python forest-tuner.py \
 --edgePath ./iref_mitab_miscore_2013_08_12_interactome.txt \
 -w 2,10,2 -b 2,10,2 -m 0.1 \
 --minNodes 60 --outputsDirName outputs --processes 8
+```
+
+Alternatively, in the case of using a Docker container, but first make sure you have the prize and edge files in the current working directory (`$PWD`):
+
+```
+docker run -v $PWD:/data/ forest-tuner:0.1 /bin/sh -c "python /opt/forest-tuner.py --forestPath /opt/OmicsIntegrator-0.3.1/scripts/forest.py --msgsteinerPath /opt/msgsteiner-1.3/msgsteiner --prizePath /data/CT-PA_prize.tsv --edgePath /data/iref_mitab_miscore_2013_08_12_interactome.txt -w 2,10,2 -b 2,10,2 -m 0.1 --minNodes 60 --workingDir /data/ --outputsDirName outputs --processes 8"
 ```
 
 ### Usage
