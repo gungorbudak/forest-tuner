@@ -38,7 +38,7 @@ python forest-tuner.py [arguments]
 * `--edgePath` (required) Absolute path to interactome.
 * `-w` or `--omega` Range and step size or value of omega value in the forms of `start,stop,step` or `value`. Defaults to `2.0,10.0,2.0`.
 * `-b` or `--beta` Range and step size or value of beta value in the forms of `start,stop,step` or `value`. Defaults to `2.0,10.0,2.0`.
-* `-m` or `--mu` Range and step size or value of mu value in the forms of `start,stop,step` or `value`. Defaults to `0.1`
+* `-m` or `--mu` Range and step size or value of mu value in the forms of `start,stop,step` or `value`. Defaults to `0.1`.
 * `--minNodes` Minimum percentage of nodes in optimal forests overlapping with terminal nodes in prize file for adding the solution to data file.
 * `--outputsDirName` Name of the outputs directory in the given working directory.
 * `--dataPath` Absolute path to output data file. Defaults to `./forest-tuner-data.tsv`.

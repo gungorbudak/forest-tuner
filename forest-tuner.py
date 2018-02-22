@@ -319,13 +319,13 @@ def main():
         help='(required) Absolute path to prize file')
     parser.add_argument('--edgePath', metavar='FILE', required=True,
         help='(required) Absolute path to edge file')
-    parser.add_argument('--w', '--omega', metavar='START,STOP,STEP or VALUE',
+    parser.add_argument('-w', '--omega', metavar='START,STOP,STEP or VALUE',
         type=str, default='2.0,10.0,2.0',
         help='Range and step size for omega value')
-    parser.add_argument('--b', '--beta', metavar='START,STOP,STEP or VALUE',
+    parser.add_argument('-b', '--beta', metavar='START,STOP,STEP or VALUE',
         type=str, default='2.0,10.0,2.0',
         help='Range and step size for beta value')
-    parser.add_argument('--m', '--mu', metavar='START,STOP,STEP or VALUE',
+    parser.add_argument('-m', '--mu', metavar='START,STOP,STEP or VALUE',
         type=str, default='0.1',
         help='Range and step size for mu value')
     parser.add_argument('--minNodes', metavar='INTEGER',
