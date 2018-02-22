@@ -59,6 +59,7 @@ The output data file contains several metrics (as columns) listed below for each
 * `num_edges`, total number of edges in the solution.
 * `num_trees`, number of connected components with node size greater than 5 in the solution.
 * `num_singletons`, number of connected components with node size less than or equal to 5 in the solution.
+* `num_hubs`, number of Steiner nodes in the solution with degree greater than 100.
 * `mean_degrees`, mean of degrees of Steiner nodes in the solution.
 * `median_degrees`, median of degrees of Steiner nodes in the solution.
 * `has_ubc`, whether the solution includes UBC protein as the node.

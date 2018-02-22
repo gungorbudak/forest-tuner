@@ -83,6 +83,7 @@ def make_data_file(data, data_path):
         'num_edges',
         'num_trees',
         'num_singletons',
+        'num_hubs',
         'mean_degrees',
         'median_degrees',
         'has_ubc'
@@ -211,6 +212,7 @@ def get_data(results, prize_path, edge_path, min_nodes):
                 float(prizes_size))
             if overlap > min_nodes:
                 steiner_nodes = set(F.nodes()).difference(prizes)
+                t = get_t(result['forest_file'])
                 n2 = len(steiner_nodes)
                 n3 = F.number_of_nodes()
                 n1 = n3 - n2
@@ -218,8 +220,8 @@ def get_data(results, prize_path, edge_path, min_nodes):
                 n5 = len([T for T in nx.connected_component_subgraphs(F)
                     if T.number_of_nodes() > 5])
                 n6 = nx.number_connected_components(F) - n5
-                t = get_t(result['forest_file'])
-                degrees = [I.degree(node) for node in steiner_nodes]
+                degrees = np.array([I.degree(node) for node in steiner_nodes])
+                num_hubs = degrees[degrees > 100].size
                 has_ubc = int(F.has_node('UBC'))
                 data.append({
                     'label': result['label'],
@@ -234,6 +236,7 @@ def get_data(results, prize_path, edge_path, min_nodes):
                     'num_edges': n4,
                     'num_trees': n5,
                     'num_singletons': n6,
+                    'num_hubs': num_hubs,
                     'mean_degrees': round(np.mean(degrees), 2),
                     'median_degrees': round(np.median(degrees), 2),
                     'has_ubc': has_ubc
