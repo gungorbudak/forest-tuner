@@ -14,13 +14,13 @@ Download `forest-tuner.py` script from this repository and move to your working 
 
 ### Example
 
-```bash
+```
 python forest-tuner.py \
 --forestPath /home/gungor/softwares/OmicsIntegrator-0.3.1/scripts/forest.py \
 --msgsteinerPath /home/gungor/softwares/msgsteiner-1.3/msgsteiner \
 --prizePath ./CT-PA_prize.tsv \
 --edgePath ./iref_mitab_miscore_2013_08_12_interactome.txt \
---wStart 2 --wEnd 10 --bStart 2 --bEnd 10 --muStart 0.1 --muEnd 0.5 --size 5 \
+-w 2,10,2 -b 2,10,2 -m 0.1 \
 --minNodes 60 --outputsDirName outputs --processes 8
 ```
 
@@ -30,7 +30,7 @@ python forest-tuner.py \
 python forest-tuner.py [arguments]
 ```
 
-#### Arguments
+#### Arguments
 
 * `--forestPath` (required) Absolute path to forest.py script in Omics Integrator installation.
 * `--msgsteinerPath` (required) Absolute path to msgsteiner executable in msgsteiner installation.
