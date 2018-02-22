@@ -382,7 +382,7 @@ def main():
         raise SystemExit
 
     # get configurations based on user input
-    configs = get_configs(args.w, args.b, args.m, args.processes)
+    configs = get_configs(args.omega, args.beta, args.mu, args.processes)
 
     # directory for storing outputs
     outputs_dir = os.path.join(args.workingDir, args.outputsDirName)

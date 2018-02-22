@@ -1,6 +1,6 @@
-# forest-tuner
+# Forest Tuner
 
-Prize-collecting Steiner Forest (PCSF or forest) algorithm parameter tuner for w, b and mu parameters. Given intervals for each parameter and size which sets the number of values to be taken from the intervals, forest tuner runs PCSF for every combination, and determines the best solution among all optimal solution by finding the minimum difference between number of trees in an optimal forest and average size of trees in the optimal forest.
+Prize-collecting Steiner Forest (PCSF or Forest) algorithm parameter tuner for omega (w), beta (b) and mu (m) parameters. Given a range and step size or a value for every parameter, Forest Tuner runs Forest for every combination, and collects several metrics (described in Interpreation section) per run to determine the best parameters set for a particular prize set and edge set (interactome).
 
 ## Setup
 
@@ -44,3 +44,21 @@ python forest-tuner.py [arguments]
 * `--dataPath` Absolute path to output data file. Defaults to `./forest-tuner-data.tsv`.
 * `--logPath` Absolute path to output log file. Defaults to `./forest-tuner.log`.
 * `--processes` Number of processes to use in parallel, also used to provide `threads` config parameter to `forest.py`.
+
+### Interpretation
+
+The output data file contains several metrics (as columns) listed below for each parameter combination (omega, beta and mu parameters) run (as rows). The data file is sorted by `mean_degrees` in ascending order and then `num_terminals` in descencing order. The idea behind this sorting is the best solution we may search should include Steiner nodes with node high degrees and the solution includes as many terminals as possible. Other considerations can be looking for solutions without singletons and UBC as it interacts with very high number of nodes.
+
+#### Metrics
+
+* `t`, sum of negative prizes.
+* `num_prizes`, number of prizes given to Forest Tuner.
+* `num_terminals`, number of terminal nodes (prizes) recovered by Forest in the solution.
+* `num_steiner`, number of Steiner nodes revealed by Forest in the solution.
+* `num_nodes`, total number of nodes (terminal and Steiner) in the solution.
+* `num_edges`, total number of edges in the solution.
+* `num_trees`, number of connected components with node size greater than 5 in the solution.
+* `num_singletons`, number of connected components with node size less than or equal to 5 in the solution.
+* `mean_degrees`, mean of degrees of Steiner nodes in the solution.
+* `median_degrees`, median of degrees of Steiner nodes in the solution.
+* `has_ubc`, whether the solution includes UBC protein as the node.
