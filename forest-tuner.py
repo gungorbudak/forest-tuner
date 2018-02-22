@@ -11,6 +11,14 @@ import numpy as np
 import networkx as nx
 
 
+def __range(start, stop, step):
+    a = start
+    yield a
+    while a != stop:
+        a = a + step
+        yield a
+
+
 def make_config_file(working_dir, config, label):
     """
     Generates the config file for the forest run
@@ -80,6 +88,8 @@ def make_data_file(data, data_path):
         'has_ubc'
         ]
 
+    # sorting the rows by mean Steiner degrees first
+    # and then number of terminals included in the solution
     data.sort(key=operator.itemgetter('mean_degrees'))
     data.sort(key=operator.itemgetter('num_terminals'), reverse=True)
 
@@ -112,31 +122,37 @@ def get_label(prize_path, config):
     return label
 
 
-def get_configs(w, b, mu, size, processes):
+def get_configs(w, b, m, processes):
     """
     Generate parameter sets from given start, end values and size
 
     Args:
-        w: dictionary of start and end values for omega parameter
-        b: dictionary of start and end values for beta parameter
-        mu: dictionary of start and end values for mu parameter
-        size: number of the parameters to be picked between given intervals
+        w: range and step size for omega parameter
+        b: range and step size for beta parameter
+        m: range and step size for mu parameter
 
     Returns:
         configs: list of parameter sets
     """
     configs = []
-    ws = np.unique(np.linspace(w['start'], w['end'], size))
-    bs = np.unique(np.linspace(b['start'], b['end'], size))
-    mus = np.unique(np.linspace(mu['start'], mu['end'], size))
 
-    for i in xrange(len(ws)):
-        for j in xrange(len(bs)):
-            for k in xrange(len(mus)):
+    ws = list(map(float, w.split(',')))
+    bs = list(map(float, b.split(',')))
+    ms = list(map(float, m.split(',')))
+    if len(ws) == 3:
+        ws = list(__range(*ws))
+    if len(bs) == 3:
+        bs = list(__range(*bs))
+    if len(ms) == 3:
+        ms = list(__range(*ms))
+
+    for i in range(len(ws)):
+        for j in range(len(bs)):
+            for k in range(len(ms)):
                 configs.append({
                     'w': round(ws[i], 2),
                     'b': round(bs[j], 2),
-                    'mu': round(mus[k], 2),
+                    'mu': round(ms[k], 2),
                     'D': 10,
                     'threads': processes
                 })
@@ -293,7 +309,7 @@ def main():
         description='Prize-collecting Steiner Forest algorithm\
                      parameter tuner for w, b and mu parameters',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--workingDir', metavar='DIR', default='.',
+    parser.add_argument('--workingDir', metavar='DIRECTORY', default='.',
         help='Working directory for configs and outputs')
     parser.add_argument('--forestPath', metavar='FILE', required=True,
         help='(required) Absolute path to forest Python script')
@@ -303,35 +319,20 @@ def main():
         help='(required) Absolute path to prize file')
     parser.add_argument('--edgePath', metavar='FILE', required=True,
         help='(required) Absolute path to edge file')
-    parser.add_argument('--wStart', metavar='DECIMAL',
-        type=float, default=2.0,
-        help='Starting value for w')
-    parser.add_argument('--wEnd', metavar='DECIMAL',
-        type=float, default=10.0,
-        help='Ending value for w')
-    parser.add_argument('--bStart', metavar='DECIMAL',
-        type=float, default=2.0,
-        help='Starting value for b')
-    parser.add_argument('--bEnd', metavar='DECIMAL',
-        type=float, default=10.0,
-        help='Ending value for b')
-    parser.add_argument('--muStart', metavar='DECIMAL',
-        type=float, default=0.1,
-        help='Starting value for mu')
-    parser.add_argument('--muEnd', metavar='DECIMAL',
-        type=float, default=0.5,
-        help='Ending value for mu')
-    parser.add_argument('--size', metavar='INTEGER',
-        type=int, default=5,
-        help='Size of w and b values to tune for')
+    parser.add_argument('--w', '--omega', metavar='START,STOP,STEP or VALUE',
+        type=str, default='2.0,10.0,2.0',
+        help='Range and step size for omega value')
+    parser.add_argument('--b', '--beta', metavar='START,STOP,STEP or VALUE',
+        type=str, default='2.0,10.0,2.0',
+        help='Range and step size for beta value')
+    parser.add_argument('--m', '--mu', metavar='START,STOP,STEP or VALUE',
+        type=str, default='0.1',
+        help='Range and step size for mu value')
     parser.add_argument('--minNodes', metavar='INTEGER',
         type=int, default=60,
         help='Minimum percentage of nodes in optimal forests\
               overlapping with terminal nodes in prize file\
               for adding the solution to data file')
-    parser.add_argument('--processes', metavar='INTEGER',
-        type=int, default=16,
-        help='Number of processes to use in parallel')
     parser.add_argument('--outputsDirName', metavar='STRING',
         type=str, default='outputs',
         help='Name of the outputs directory in the given\
@@ -342,6 +343,9 @@ def main():
     parser.add_argument('--logPath', metavar='FILE',
         default='./forest-tuner.log',
         help='Absolute path to log file')
+    parser.add_argument('--processes', metavar='INTEGER',
+        type=int, default=16,
+        help='Number of processes to use in parallel')
     args = parser.parse_args()
 
     # setting up a logger
@@ -378,11 +382,7 @@ def main():
         raise SystemExit
 
     # get configurations based on user input
-    configs = get_configs(
-        {'start': args.wStart, 'end': args.wEnd},
-        {'start': args.bStart, 'end': args.bEnd},
-        {'start': args.muStart, 'end': args.muEnd},
-        args.size, args.processes)
+    configs = get_configs(args.w, args.b, args.m, args.processes)
 
     # directory for storing outputs
     outputs_dir = os.path.join(args.workingDir, args.outputsDirName)

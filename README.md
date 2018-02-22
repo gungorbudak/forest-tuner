@@ -24,45 +24,23 @@ python forest-tuner.py \
 --minNodes 60 --outputsDirName outputs --processes 8
 ```
 
-### Getting help
+### Usage
 
-```bash
-usage: forest-tuner.py [-h] [--workingDir DIR] --forestPath FILE
-                       --msgsteinerPath FILE --prizePath FILE --edgePath FILE
-                       [--wStart DECIMAL] [--wEnd DECIMAL] [--bStart DECIMAL]
-                       [--bEnd DECIMAL] [--muStart DECIMAL] [--muEnd DECIMAL]
-                       [--size INTEGER] [--minNodes INTEGER]
-                       [--processes INTEGER] [--outputsDirName STRING]
-                       [--dataPath FILE] [--logPath FILE]
-
-Prize-collecting Steiner Forest algorithm parameter tuner for w, b and mu
-parameters
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --workingDir DIR      Working directory for configs and outputs (default: .)
-  --forestPath FILE     (required) Absolute path to forest Python script
-                        (default: None)
-  --msgsteinerPath FILE
-                        (required) Absolute path to msgsteiner executable
-                        (default: None)
-  --prizePath FILE      (required) Absolute path to prize file (default: None)
-  --edgePath FILE       (required) Absolute path to edge file (default: None)
-  --wStart DECIMAL      Starting value for w (default: 1.0)
-  --wEnd DECIMAL        Ending value for w (default: 10.0)
-  --bStart DECIMAL      Starting value for b (default: 1.0)
-  --bEnd DECIMAL        Ending value for b (default: 10.0)
-  --muStart DECIMAL     Starting value for mu (default: 0.01)
-  --muEnd DECIMAL       Ending value for mu (default: 0.05)
-  --size INTEGER        Size of w and b values to tune for (default: 5)
-  --minNodes INTEGER    Minimum percentage of nodes in optimal forests
-                        overlapping with terminal nodes in prize file for
-                        adding the solution to data file (default: 60)
-  --processes INTEGER   Number of processes to use in parallel (default: 64)
-  --outputsDirName STRING  Name of the outputs directory in the given working
-                        directory (default: outputs)
-  --dataPath FILE       Absolute path to data file (default: ./forest-tuner-
-                        data.tsv)
-  --logPath FILE        Absolute path to log file (default: ./forest-
-                        tuner.log)
 ```
+python forest-tuner.py [arguments]
+```
+
+#### Arguments
+
+* `--forestPath` (required) Absolute path to forest.py script in Omics Integrator installation.
+* `--msgsteinerPath` (required) Absolute path to msgsteiner executable in msgsteiner installation.
+* `--prizePath` (required) Absolute path to tab-separated values of terminals and their prizes.
+* `--edgePath` (required) Absolute path to interactome.
+* `-w` or `--omega` Range and step size or value of omega value in the forms of `start,stop,step` or `value`. Defaults to `2.0,10.0,2.0`.
+* `-b` or `--beta` Range and step size or value of beta value in the forms of `start,stop,step` or `value`. Defaults to `2.0,10.0,2.0`.
+* `-m` or `--mu` Range and step size or value of mu value in the forms of `start,stop,step` or `value`. Defaults to `0.1`
+* `--minNodes` Minimum percentage of nodes in optimal forests overlapping with terminal nodes in prize file for adding the solution to data file.
+* `--outputsDirName` Name of the outputs directory in the given working directory.
+* `--dataPath` Absolute path to output data file. Defaults to `./forest-tuner-data.tsv`.
+* `--logPath` Absolute path to output log file. Defaults to `./forest-tuner.log`.
+* `--processes` Number of processes to use in parallel, also used to provide `threads` config parameter to `forest.py`.
